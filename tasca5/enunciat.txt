@@ -1,0 +1,53 @@
+Tasca 5. FutureBuilder
+En aquesta tasca farem evolucionar la nostra aplicació d'informació sobre les comarques del País Valencià, eliminant ja el fitxer amb la informació, i obtenint la informació que necessitem a través de l'API de comarques que vam veure a la unitat 2.
+
+Com hem vist a través de les diferents unitats, les invocacions a serveis web ens retornen la informació a través de Futures, de manera que farem ús del giny FutureBuilder per tal de construir els diferents ginys depenents d'aquestes crides.
+
+Peticions HTTP necessàries
+A la tasca 2 vam crear el fitxer peticions_http.dart amb el següents mètodes:
+
+obtenirComarques, que retornava, donada una província, un Future amb una llista de les comarques de la província, junt amb una imatge representativa d'aquesta.
+infoComarca, que retornava, donada una comarca, un Future amb la informació sobre aquesta que oferia l'API.
+Anem a incorporar aquest fitxer peticions_http.dart al nostre projecte, i a fer ús d'aquestes funcions per tal d'obtenir la informació que necessitem.
+
+A més, anem a incorporar el següent mètode a aquesta llibreria:
+
+Future<List<dynamic>> obtenirProvincies(): Que retornarà un Future amb la llista de províncies, la qual conté el nom i una imatge. Aquest mètode realitzarà una petició HTTP a l'endpoint https://node-comarques-rest-server-production.up.railway.app/api/comarques. El resultat d'aquesta petició és el següent JSON:
+[
+   {
+      "provincia":"València",
+      "img": // URL de la imatge de València
+   },
+   {
+      "provincia":"Alacant",
+      "img": // URL de la imatge d'Alacant
+   },
+   {
+      "provincia":"Castelló",
+      "img": // URL de la imatge de Castelló
+   }
+]
+<Future<dynamic> obteClima({required double longitud, required double latitud}): Que obté la informació sobre l'oratge a partir de les coordenades geogràfiques. Aquest mètode serà exactament igual que el que hem vist a la unitat.
+
+Pantalles i Ginys
+Les pantalles i la navegació a utilitzar seran les que ja tenim implementades de tasques anteriors, amb la diferència que ara faran ús de la informació que obtenim mitjançant les peticions HTTP. Les modificacions concretes que caldrà implementar són:
+
+Sobre la pantalla de selecció de província, caldrà obtenir les províncies mitjançant la funció obtenirProvincies, i fer ús d'un FutureBuilder, de manera que quan es resolga la petició, es genere el contingut. Mentre no es resolga es mostrarà un indicador de progrés.
+
+Sobre la pantalla de selecció de comarca, caldrà obtenir les comarques de la província en qüestió fent ús de la funció obtenirComarques, i generar el contingut amb un FutureBuilder quan es resolga la petició. Mentre no es resolga es mostrarà un indicador de progrés.
+
+Sobre la pantalla d'informació sobre la comarca, caldrà obtenir la informació sobre la comarca seleccionada, mitjançant la funció obtenirInfoComarca, així com l'oratge actual mitjançant la funció obteClima. Els dos ginys que representen cadascuna de les vistes d'aquesta pantalla es generaran mitjançant el els seus respectius FutureBuilder, segons el resultat de cada funció.
+
+Consideracions finals
+Tingueu en compte que Flutter ens permet separar widgets i crear funcions per generar-nos els widgets per evitar que el codi dels nostres ginys cresca sense mesura. Per exemple, si disposem d'un giny personalitzat que es diga ProvinciaRoundButton i que dibuixa la imatge rodona amb el nom a dins de la província en la primera pantalla, podem crear la següent funció per generar la llista de ginys per a les províncies a partir de les dades rebudes en l'snapshot:
+_creaLlistaProvincies(List<dynamic> data) {
+   List<Widget> llista = [];
+   for (dynamic provincia in data) {
+   llista.add(ProvinciaRoundButton(
+         nom: provincia["provincia"], img: provincia["img"]));
+   llista.add(SizedBox(height: 20));
+   }
+}
+Respecte al pas d'informació entre pantalles, caldrà que proporcionar el següent:
+Des del selector de províncies al selector de comarques proporcionem el nom de la província sobre la que s'ha fet clic. Una vegada en el selector de comarques, abans de mostrar el giny caldrà obtenir les comarques.
+Des del selector de comarques a a la pantalla de mostrar informació sobre la comarca, proporcionarem el nom de la comarca. La pantalla principal d'informació sobre la comarca serà qui faça la petició HTTP per obtenir la informació de la comarca i la proporcione als dos ginys que formen la vista. Després, en el giny d'informació sobre l'oratge haurem de fer ús de la funció obteClima, proporcionant la latitud i longitud de la comarca que estem mostrant.
